@@ -412,7 +412,7 @@ const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){retu
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const app=document.getElementById("app"),courtEl=document.getElementById("court");
 const HOOP=[250,52];
-const SHARE_URL="https://surettemediagroup.github.io/longshot/";
+const SHARE_URL=/^https?:/.test(location.href)?location.origin+location.pathname:"https://surettemediagroup.github.io/Longshot/";
 function spot(tier,i){const off=i-3;
   if(tier===1)return[250+off*16,190];
   if(tier===5)return[250+off*34,448];
