@@ -85,6 +85,8 @@ button.ghost{background:transparent;color:var(--cink);border:2px solid #d8ccb8}
 .lb .nm{font-weight:700;overflow-wrap:anywhere}.lb .nm small{display:block;font-weight:600;font-size:13px;color:var(--cmute)}
 .lb .sc{font:400 26px/1 Anton,Impact,sans-serif;font-variant-numeric:tabular-nums}
 #nf{margin-top:14px}
+.sug{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;min-height:0}
+.sug button{min-height:40px;font:600 15px Barlow,sans-serif;letter-spacing:0;background:#f1e9dc;color:var(--cink);padding:0 12px}
 </style>
 </head>
 <body>
@@ -558,8 +560,13 @@ function ask(){
     <h2>${esc(p.q)}</h2>
     <div class="timer" id="tb"><i id="bar"></i></div>
     <form id="f" autocomplete="off"><input id="in" aria-label="Your answer" placeholder="Type your answer" autocapitalize="off" spellcheck="false" maxlength="60"><button>Shoot</button></form>
+    <div class="sug" id="sug" aria-live="polite"></div>
   </section>`;
   const inp=document.getElementById("in");inp.focus();
+  const sug=document.getElementById("sug");
+  inp.oninput=()=>{const list=suggest(p,inp.value);
+    sug.innerHTML=list.map((n,i)=>`<button type="button" data-i="${i}">${esc(n)}</button>`).join("");
+    sug.querySelectorAll("button").forEach(b=>b.onclick=()=>lock(list[+b.dataset.i]))};
   document.getElementById("f").onsubmit=e=>{e.preventDefault();lock(inp.value)};
   clearInterval(timerId);
   timerId=setInterval(()=>{left-=.25;const s=Math.max(0,Math.ceil(left));
@@ -587,6 +594,11 @@ function lock(v){
   const nx=document.getElementById("nx");nx.focus();
   nx.onclick=()=>{G.i++;G.i<7?ask():final()};
 }
+function suggest(p,raw){const k=norm(raw);if(k.length<3)return[];const seen=new Set(),out=[];
+  for(const [key,it] of p.map){if(seen.has(it.name))continue;
+    const hit=key.startsWith(k)||key.split(" ").some(w=>w.startsWith(k))||(k.length>=5&&key.length>=k.length&&lev(k,key.slice(0,k.length))<=1);
+    if(hit){seen.add(it.name);out.push(it.name)}}
+  return out.sort((a,b)=>a.length-b.length).slice(0,5)}
 function rank(n){return n<150?"Benchwarmer":n<300?"Sixth man":n<450?"Starter":n<600?"All-Star":"Hall of Famer"}
 function boardInto(){const el=document.getElementById("fb");if(!el)return;
   el.innerHTML=`<div class="meta"><span>TODAY'S LEADERBOARD</span><span></span></div>${lbTabs()}<div>${dbState==="on"?boardHTML(lbMode):""}</div><p class="toast">${esc(boardNote())}</p>`;
