@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Long Shot</title>
+<meta name="description" content="Long Shot: a daily sports trivia game. Name the answer nobody else thinks of.">
+<meta property="og:title" content="Long Shot">
+<meta property="og:description" content="Daily sports trivia. The rarer your right answer, the deeper the shot.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
 <style>
@@ -409,7 +412,7 @@ const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){retu
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const app=document.getElementById("app"),courtEl=document.getElementById("court");
 const HOOP=[250,52];
-const SHARE_URL="https://claude.ai/artifact/CWbpAxg9J1dsPFcid2xivR";
+const SHARE_URL="https://surettemediagroup.github.io/longshot/";
 function spot(tier,i){const off=i-3;
   if(tier===1)return[250+off*16,190];
   if(tier===5)return[250+off*34,448];
@@ -449,13 +452,16 @@ function shoot(tier,i,made){
     if(t<1)requestAnimationFrame(step);else b.setAttribute("r",made?"0":"9")};
   requestAnimationFrame(step);}
 
-/* ---------- shared leaderboard + crowd rarity ---------- */
-let db=null,uid=null,canWrite=false,players=[],dbState="loading",writing=Promise.resolve();
+/* ---------- shared leaderboard + crowd rarity (Supabase) ---------- */
+const SUPA_URL="";   // e.g. https://xxxx.supabase.co
+const SUPA_KEY="";   // anon public key
+const db=!!(SUPA_URL&&SUPA_KEY),canWrite=db;
+let uid=store.get("ls-device");if(!uid){uid=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now());store.set("ls-device",uid)}
+let players=[],dbState=db?"loading":"off",writing=Promise.resolve();
+const H={apikey:SUPA_KEY,Authorization:"Bearer "+SUPA_KEY,"Content-Type":"application/json"};
 const me=()=>players.find(p=>p.id===uid);
 const cleanName=s=>String(s||"").replace(/\s+/g," ").trim().slice(0,20);
-function crowd(pi,name){ // other players' answers to this prompt
-  let n=0,c=0;for(const p of players){if(p.id===uid)continue;const a=p.ans&&p.ans[pi];if(!Array.isArray(a)||!a.length)continue;n++;if(a.includes(name))c++}
-  return{n,c};}
+function crowd(pi,name){let n=0,c=0;for(const p of players){if(p.id===uid)continue;const a=p.ans&&p.ans[pi];if(!Array.isArray(a)||!a.length)continue;n++;if(a.includes(name))c++}return{n,c}}
 function finalTier(pi,hit){
   if(!hit)return{tier:-1,n:0,c:0};
   const{n,c}=crowd(pi,hit.name);if(n<5)return{tier:hit.tier,n,c};
@@ -463,36 +469,41 @@ function finalTier(pi,hit){
   return{tier:n>=20?ct:Math.round((hit.tier+ct)/2),n,c};}
 const legTier=l=>typeof l.tier==="number"?l.tier:(l.hit?l.hit.tier:-1);
 const legPts=l=>{const t=legTier(l);return t<0?0:TIERS[t].p};
-(async()=>{
-  const timer=setTimeout(()=>{if(dbState==="loading"){dbState="slow";refresh()}},10000);
+async function load(){
+  if(!db)return;
   try{
-    db=await claude.use("db");const user=await claude.use("user");
-    if(!db){clearTimeout(timer);dbState="off";refresh();return}
-    uid=user?await user.id():null;
-    const cw=user&&user.can?await user.can("data.write"):null;canWrite=!!uid&&cw!==false;
-    db.collection("players").onSnapshot(snap=>{
-      players=snap.docs.filter(d=>d.exists).map(d=>({id:d.id,...d.data()}));
-      if(!snap.metadata.fromCache){clearTimeout(timer)}dbState="on";refresh();
-    },()=>{clearTimeout(timer);dbState="off";refresh()});
-  }catch(e){clearTimeout(timer);dbState="off";refresh()}
-})();
+    const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),10000);
+    const [sr,ar]=await Promise.all([
+      fetch(SUPA_URL+"/rest/v1/scores?select=device,player,day,mode,total,legs,created_at&order=created_at.asc&limit=5000",{headers:H,signal:ctl.signal}),
+      fetch(SUPA_URL+"/rest/v1/answers?select=prompt,name,device&limit=20000",{headers:H,signal:ctl.signal})]);
+    clearTimeout(tm);if(!sr.ok||!ar.ok)throw 0;
+    const scores=await sr.json(),answers=await ar.json(),map={};
+    const P_=d=>map[d]||(map[d]={id:d,name:"",days:{},best:0,ans:{}});
+    for(const r of scores){const p=P_(String(r.device));p.name=String(r.player||p.name);
+      if(r.mode==="daily"){if(!p.days[r.day])p.days[r.day]={total:+r.total||0,legs:Array.isArray(r.legs)?r.legs:[]}}else p.best=Math.max(p.best,+r.total||0)}
+    for(const r of answers){const p=P_(String(r.device)),k=String(r.prompt);(p.ans[k]=p.ans[k]||[]).push(String(r.name))}
+    players=Object.values(map);dbState="on";
+  }catch(e){dbState=players.length?"on":"slow"}
+  refresh();}
+load();setInterval(()=>{if(view==="board"||view==="final")load()},60000);
 let view="home";
 function refresh(){if(view==="home")home();else if(view==="board")board();else if(view==="final")boardInto()}
 function saveGame(daily,legs,tot,name){
-  if(!db||!uid||!canWrite)return Promise.resolve(false);
-  const cur=me()||{},doc=JSON.parse(JSON.stringify(cur));delete doc.id;
-  doc.name=cleanName(name||doc.name)||"Player";doc.ans=doc.ans||{};doc.days=doc.days||{};
-  legs.forEach(l=>{if(!l.hit)return;const k=String(l.pi),a=doc.ans[k]||[];if(!a.includes(l.hit.name))a.push(l.hit.name);doc.ans[k]=a.slice(-60)});
-  if(daily&&!doc.days[dkey])doc.days[dkey]={total:tot,legs:legs.map(l=>({pi:l.pi,ans:String(l.ans).slice(0,40),name:l.hit?l.hit.name:"",tier:legTier(l)}))};
-  if(!daily){doc.best=Math.max(doc.best||0,tot);doc.practice=(doc.practice||0)+1}
-  doc.updated=Date.now();
-  writing=writing.then(()=>db.doc("players/"+uid).set(doc)).then(()=>true).catch(e=>{if(e&&e.code==="invalid_argument")canWrite=false;return false});
+  if(!db)return Promise.resolve(false);
+  const nm=cleanName(name||(me()&&me().name)||store.get("ls-name"))||"Player";
+  const row={device:uid,player:nm,day:dkey,mode:daily?"daily":"practice",total:tot,
+    legs:legs.map(l=>({pi:l.pi,ans:String(l.ans).slice(0,40),name:l.hit?l.hit.name:"",tier:legTier(l)}))};
+  const ans=legs.filter(l=>l.hit).map(l=>({prompt:l.pi,name:l.hit.name,device:uid}));
+  writing=writing.then(async()=>{
+    const r=await fetch(SUPA_URL+"/rest/v1/scores",{method:"POST",headers:{...H,Prefer:"return=minimal"},body:JSON.stringify(row)});
+    if(ans.length)await fetch(SUPA_URL+"/rest/v1/answers",{method:"POST",headers:{...H,Prefer:"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify(ans)});
+    await load();return r.ok||r.status===409;
+  }).catch(()=>false);
   return writing;}
 function myDaily(){const m=me();if(m&&m.days&&m.days[dkey])return m.days[dkey];return store.get("ls-"+dkey)}
-
 let G=null,timerId=null;
 const total=()=>G.legs.reduce((s,l)=>s+legPts(l),0);
-const boardNote=()=>dbState==="on"?(canWrite?"":"You can see the leaderboard, but this link doesn't let you post scores. Ask Matt to invite you."):dbState==="off"?"Sign in to Claude to see the leaderboard.":dbState==="slow"?"The leaderboard can't be reached right now.":"Loading the leaderboard…";
+const boardNote=()=>dbState==="on"?"":dbState==="off"?"The leaderboard is coming soon.":dbState==="slow"?"The leaderboard can't be reached right now. Try again in a bit.":"Loading the leaderboard…";
 
 function home(){
   view="home";clearInterval(timerId);drawCourt(null,0,false);
@@ -585,7 +596,7 @@ function final(){
   drawCourt(G.legs,7,false);
   if(G.daily&&!store.get("ls-"+dkey))store.set("ls-"+dkey,{total:tot,legs:G.legs.map(l=>({pi:l.pi,ans:l.ans,name:l.hit?l.hit.name:"",tier:legTier(l)}))});
   if(!G.daily&&tot>(store.get("ls-best")||0))store.set("ls-best",tot);
-  const needName=!G.saved&&db&&canWrite&&!(me()&&me().name);
+  const needName=!G.saved&&db&&!(me()&&me().name)&&!store.get("ls-name");
   const savedName=store.get("ls-name")||"";
   app.className="out";
   app.innerHTML=`<section class="card">
@@ -604,7 +615,7 @@ function final(){
   const sv=document.getElementById("sv");
   const post=name=>{G.saved=true;sv.textContent="Posting…";
     saveGame(G.daily,G.legs,tot,name).then(ok=>{sv.textContent=ok?"Score posted.":boardNote()||"Couldn't post this score."})};
-  if(!G.saved&&db&&canWrite&&!needName)post();
+  if(!G.saved&&db&&!needName)post();
   else if(!G.saved&&dbState!=="on")sv.textContent=boardNote();
   document.getElementById("nf").onsubmit=e=>{e.preventDefault();const n=cleanName(document.getElementById("nm").value);if(!n){sv.textContent="Add a name first.";return}
     store.set("ls-name",n);document.getElementById("nf").classList.add("hide");post(n)};
