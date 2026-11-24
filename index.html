@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Long Shot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: loud, playful, a night game in the Garden
+   IDEA: a shot chart — rarer answers are deeper shots, from layup to half-court
+   PICTURE: a painted half court that fills with your made shots, ball flies to the rim
+   COLOUR and TYPE: maple hardwood, green paint, ball orange; Anton + Barlow
+   LAYOUT: one centred column, court on top, slip card below, phone first */
+:root{color-scheme:light dark;--wood:light-dark(#d9a066,#7a4b26);--wood2:light-dark(#d1975c,#714421);--ink:light-dark(#2a1a0c,#fbefe0);--mute:light-dark(#6a4a2c,#e2c6a6);
+--card:#fffdf8;--cink:#24170b;--cmute:#6f6052;--paint:#0b5d3b;--ball:#f26b1d;--hot:#c8102e;--rule:#e6dccb}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;min-height:100vh;color:var(--ink);font:16px/1.5 Barlow,system-ui,sans-serif;overflow-x:clip;
+background:repeating-linear-gradient(90deg,var(--wood) 0 44px,var(--wood2) 44px 46px,var(--wood) 46px 92px),var(--wood)}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 0,rgba(255,255,255,.28),transparent 55%),linear-gradient(180deg,transparent 70%,rgba(0,0,0,.18))}
+.wrap{position:relative;max-width:560px;margin:0 auto;padding:18px 16px 44px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.logo{font:400 36px/1 Anton,Impact,sans-serif;margin:0;letter-spacing:.4px}
+.logo span{color:var(--paint)}
+:root[data-theme=dark] .logo span{color:#3fbf7f}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .logo span{color:#3fbf7f}}
+.pill{font:700 14px/1 "Barlow Condensed",sans-serif;border:2px solid currentColor;border-radius:99px;padding:7px 12px;white-space:nowrap;opacity:.8}
+.court{position:relative;border-radius:16px;overflow:hidden;box-shadow:0 14px 30px rgba(0,0,0,.25);margin-bottom:14px;background:#d9a066}
+.court svg{display:block;width:100%;height:auto;margin:0 auto}
+.court.mini svg{max-height:36vh}
+.card{background:var(--card);color:var(--cink);border-radius:16px;padding:20px;box-shadow:0 14px 30px rgba(0,0,0,.22)}
+h2{font:400 clamp(26px,6.5vw,36px)/1.08 Anton,Impact,sans-serif;margin:4px 0;text-wrap:balance}
+.sub{color:var(--cmute);font-size:15px;margin:0}
+.meta{display:flex;justify-content:space-between;gap:8px;font:700 14px/1 "Barlow Condensed",sans-serif;color:var(--cmute)}
+.clock{font:400 22px/1 Anton,Impact,sans-serif;color:var(--cink);background:#1d1d1d;color:#ffb21e;padding:4px 8px;border-radius:6px;font-variant-numeric:tabular-nums}
+.clock.low{color:#ff3b3b}
+.timer{height:8px;border-radius:9px;background:var(--rule);overflow:hidden;margin-top:12px}
+.timer i{display:block;height:100%;width:100%;background:var(--paint);transition:width .25s linear}
+.timer.low i{background:var(--hot)}
+form{display:flex;gap:8px;margin-top:14px}
+input{flex:1;font:600 17px Barlow,sans-serif;padding:12px 14px;border:2px solid #d8ccb8;border-radius:10px;background:#fff;color:var(--cink);min-height:48px}
+input:focus{outline:none;border-color:var(--paint)}
+button{font:400 18px/1 Anton,Impact,sans-serif;letter-spacing:.6px;border:0;border-radius:10px;padding:0 18px;min-height:48px;cursor:pointer;background:var(--ball);color:#fff}
+button:focus-visible{outline:3px solid var(--paint);outline-offset:2px}
+button.ghost{background:transparent;color:var(--cink);border:2px solid #d8ccb8}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.row button{flex:1 1 140px}
+.out .row button.ghost{color:var(--ink);border-color:currentColor}
+.stamp{display:inline-block;transform:rotate(-4deg);border:3px solid currentColor;border-radius:8px;padding:6px 12px;font:400 28px/1 Anton,Impact,sans-serif;animation:pop .35s ease-out .55s both}
+@keyframes pop{from{transform:rotate(-4deg) scale(1.6);opacity:0}}
+@media(prefers-reduced-motion:reduce){.stamp{animation:none}.timer i{transition:none}}
+.res{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
+.pts{font:400 40px/1 Anton,Impact,sans-serif}
+.you{font-weight:700;font-size:18px;margin:8px 0 0}
+.deep{font-size:14px;color:var(--cmute);margin:12px 0 0}
+.tiers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.tier{border-radius:10px;padding:10px 6px;text-align:center;background:rgba(255,253,248,.88);color:var(--cink)}
+.tier b{display:block;font:400 19px/1.1 Anton,Impact,sans-serif}
+.tier small{display:block;font:700 13px/1.2 "Barlow Condensed",sans-serif;color:var(--cmute)}
+.slip{list-style:none;margin:0;padding:0}
+.slip li{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:2px 10px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:start}
+.slip li:last-child{border:0}
+.slip .n{grid-row:span 2;width:24px;height:24px;border-radius:50%;background:var(--ball);color:#fff;font:700 13px/24px Barlow,sans-serif;text-align:center}
+.slip .n.x{background:#bdb3a5}
+.slip .q{font-weight:700;font-size:15px}.slip .a{font-size:14px;color:var(--cmute)}
+.slip .o{grid-row:span 2;text-align:right;font:400 18px/1.1 Anton,Impact,sans-serif;white-space:nowrap}
+.slip .o small{display:block;font:600 13px Barlow,sans-serif;color:var(--cmute)}
+.big{font:400 clamp(56px,16vw,84px)/1 Anton,Impact,sans-serif;margin:2px 0}
+.how{font-size:15px;margin:14px 0 0}
+.toast{min-height:20px;font-size:14px;color:var(--cmute);margin-top:8px}
+.foot{font-size:13px;margin-top:20px;text-align:center;color:var(--mute)}
+.hide{display:none}
+.tabs{display:flex;gap:6px;margin:14px 0 6px;flex-wrap:wrap}
+.tabs button{flex:1 1 auto;min-height:40px;font:700 15px "Barlow Condensed",sans-serif;letter-spacing:0;background:#f1e9dc;color:var(--cink);padding:0 12px}
+.tabs button.on{background:var(--paint);color:#fff}
+.lb{list-style:none;margin:0;padding:0}
+.lb li{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--rule)}
+.lb li:last-child{border:0}
+.lb li.mine{background:#fff3e6;margin:0 -10px;padding:10px;border-radius:10px}
+.lb .rk{font:400 22px/1 Anton,Impact,sans-serif;color:var(--cmute);text-align:center}
+.lb li:first-child .rk{color:var(--ball)}
+.lb .nm{font-weight:700;overflow-wrap:anywhere}.lb .nm small{display:block;font-weight:600;font-size:13px;color:var(--cmute)}
+.lb .sc{font:400 26px/1 Anton,Impact,sans-serif;font-variant-numeric:tabular-nums}
+#nf{margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1 class="logo">LONG <span>SHOT</span></h1><span class="pill" id="date"></span></header>
+  <div class="court" id="court"></div>
+  <main id="app"></main>
+  <p class="foot">Seven prompts, 25 seconds each. Obvious answers are layups; deep cuts are half-court heaves. Rarity starts as curated estimates and shifts toward what players actually answer.</p>
+</div>
+<script>
+{
+const TIERS=[
+ {k:"Layup",s:"LAY",p:10,c:"#7a5a3c",d:"Everyone had it"},
+ {k:"Free throw",s:"FT",p:25,c:"#0b5d3b",d:"Common pick"},
+ {k:"Mid-range",s:"MID",p:40,c:"#1f6fb2",d:"Solid"},
+ {k:"Three",s:"3PT",p:60,c:"#7b3fc4",d:"From downtown"},
+ {k:"Logo three",s:"LOGO",p:80,c:"#e0611c",d:"Deep range"},
+ {k:"Half-court",s:"HALF",p:100,c:"#c8102e",d:"Almost nobody"}];
+// t: six tiers, entries split by ";", aliases by "/"
+const P=[
+{q:"Name an NFL team",team:1,t:[
+"New England Patriots/Pats/New England;Dallas Cowboys/Dallas",
+"Green Bay Packers/Green Bay;Pittsburgh Steelers/Pittsburgh;Philadelphia Eagles/Philadelphia/Philly;Kansas City Chiefs/Kansas City/KC;San Francisco 49ers/Niners/San Francisco/SF;New York Giants/Giants",
+"Chicago Bears/Chicago;New York Jets/Jets;Miami Dolphins/Miami/Fins;Buffalo Bills/Buffalo;Baltimore Ravens/Baltimore;Seattle Seahawks/Seattle;Denver Broncos/Denver;Las Vegas Raiders/Raiders/Oakland Raiders",
+"Los Angeles Rams/Rams/LA Rams;Minnesota Vikings/Minnesota;Detroit Lions/Detroit;Cleveland Browns/Cleveland;New Orleans Saints/New Orleans;Washington Commanders/Washington;Indianapolis Colts/Indianapolis/Indy;Tampa Bay Buccaneers/Bucs/Tampa Bay",
+"Cincinnati Bengals/Cincinnati/Cincy;Los Angeles Chargers/Chargers/LA Chargers;Atlanta Falcons/Atlanta;Carolina Panthers/Carolina;Arizona Cardinals/Arizona;Tennessee Titans/Tennessee",
+"Jacksonville Jaguars/Jags/Jacksonville;Houston Texans/Houston"]},
+{q:"Name an NBA team",team:1,t:[
+"Boston Celtics/Boston/Celts;Los Angeles Lakers/Lakers/LA Lakers",
+"Chicago Bulls/Chicago;Golden State Warriors/Golden State/Dubs;Miami Heat/Miami;New York Knicks/Knicks",
+"Brooklyn Nets/Brooklyn;Philadelphia 76ers/Sixers/Philadelphia/Philly;Dallas Mavericks/Mavs/Dallas;San Antonio Spurs/San Antonio;Cleveland Cavaliers/Cavs/Cleveland;Denver Nuggets/Denver;Phoenix Suns/Phoenix",
+"Milwaukee Bucks/Milwaukee;Houston Rockets/Houston;Toronto Raptors/Toronto;Detroit Pistons/Detroit;Los Angeles Clippers/Clippers/LA Clippers;Oklahoma City Thunder/OKC/Oklahoma City;Atlanta Hawks/Atlanta;Orlando Magic/Orlando",
+"Indiana Pacers/Indiana;Utah Jazz/Utah;Portland Trail Blazers/Trail Blazers/Blazers/Portland;Sacramento Kings/Sacramento;Minnesota Timberwolves/Wolves/Minnesota;Washington Wizards/Washington",
+"Charlotte Hornets/Charlotte;Memphis Grizzlies/Grizz/Memphis;New Orleans Pelicans/Pels/New Orleans"]},
+{q:"Name a QB who won a Super Bowl as a starter",people:1,t:[
+"Tom Brady/TB12;Patrick Mahomes",
+"Peyton Manning;Joe Montana;Eli Manning;Aaron Rodgers",
+"John Elway;Drew Brees;Terry Bradshaw;Troy Aikman;Ben Roethlisberger/Big Ben;Russell Wilson",
+"Brett Favre;Steve Young;Kurt Warner;Joe Namath;Roger Staubach;Nick Foles;Matthew Stafford;Jalen Hurts",
+"Joe Flacco;Jim McMahon;Bart Starr;Phil Simms;Trent Dilfer;Sam Darnold;Brad Johnson;Doug Williams",
+"Jim Plunkett;Joe Theismann;Bob Griese;Ken Stabler/Snake;Len Dawson;Johnny Unitas;Earl Morrall;Mark Rypien;Jeff Hostetler"]},
+{q:"Name a player on the 2004 World Series champion Red Sox",people:1,t:[
+"David Ortiz/Big Papi/Papi;Pedro Martinez/Pedro",
+"Manny Ramirez/Manny;Johnny Damon;Curt Schilling;Jason Varitek/Tek",
+"Kevin Millar;Dave Roberts;Tim Wakefield/Wake;Keith Foulke;Trot Nixon",
+"Derek Lowe;Bill Mueller;Orlando Cabrera;Bronson Arroyo;Mark Bellhorn",
+"Doug Mientkiewicz;Mike Timlin;Alan Embree;Kevin Youkilis/Youk;Gabe Kapler;Doug Mirabelli;Pokey Reese",
+"Mike Myers;Curtis Leskanic;Ramiro Mendoza;Terry Adams;Scott Williamson;Brian Daubach;Ellis Burks;David McCarty"]},
+{q:"Name a Celtic honored in the Garden rafters",people:1,t:[
+"Larry Bird/Larry Legend;Bill Russell",
+"Paul Pierce/The Truth;Kevin McHale;Robert Parish/The Chief;Bob Cousy",
+"John Havlicek/Hondo;Kevin Garnett/KG;Dave Cowens;Dennis Johnson/DJ;Red Auerbach/Red",
+"Sam Jones;K.C. Jones/KC Jones;Tom Heinsohn/Tommy Heinsohn;Reggie Lewis;Cedric Maxwell/Cornbread;Jo Jo White",
+"Bill Sharman;Don Nelson;Satch Sanders/Tom Sanders;Frank Ramsey;Ed Macauley",
+"Jim Loscutoff/Loscy;Walter Brown;Johnny Most"]},
+{q:"Name an NBA regular-season MVP",people:1,t:[
+"Michael Jordan/MJ;LeBron James/LeBron/Bron",
+"Larry Bird;Magic Johnson/Magic;Kobe Bryant/Kobe;Stephen Curry/Steph Curry/Steph",
+"Kareem Abdul-Jabbar/Kareem/Lew Alcindor;Shaquille O'Neal/Shaq;Tim Duncan;Kevin Durant/KD;Nikola Jokic/Jokic;Giannis Antetokounmpo/Giannis;Bill Russell",
+"Wilt Chamberlain/Wilt;Allen Iverson/AI;Kevin Garnett/KG;Dirk Nowitzki/Dirk;Steve Nash;James Harden;Russell Westbrook/Russ;Derrick Rose;Shai Gilgeous-Alexander/SGA/Shai;Joel Embiid;Hakeem Olajuwon/Hakeem",
+"Charles Barkley/Barkley;Karl Malone/The Mailman;David Robinson/The Admiral;Moses Malone;Julius Erving/Dr. J;Oscar Robertson/Big O;Bill Walton",
+"Bob Pettit;Bob Cousy;Wes Unseld;Willis Reed;Dave Cowens;Bob McAdoo"]},
+{q:"Name the home ballpark of a current MLB team",t:[
+"Fenway Park/Fenway;Yankee Stadium",
+"Wrigley Field/Wrigley;Dodger Stadium",
+"Citi Field;Oracle Park;Camden Yards/Oriole Park at Camden Yards;Busch Stadium;Coors Field;Petco Park",
+"Citizens Bank Park;PNC Park;Comerica Park;Target Field;Nationals Park;Truist Park;Rogers Centre;T-Mobile Park;Progressive Field;Angel Stadium;Tropicana Field/The Trop",
+"Kauffman Stadium/The K;Great American Ball Park;Chase Field;Globe Life Field;American Family Field/Miller Park;Daikin Park/Minute Maid Park;Rate Field/Guaranteed Rate Field",
+"loanDepot park/LoanDepot;Sutter Health Park;George M. Steinbrenner Field/Steinbrenner Field"]},
+{q:"Name an NFL team that has never won a Super Bowl",team:1,t:[
+"Buffalo Bills/Buffalo;Minnesota Vikings/Minnesota",
+"Detroit Lions/Detroit;Cleveland Browns/Cleveland",
+"Cincinnati Bengals/Cincinnati/Cincy;Atlanta Falcons/Atlanta;Carolina Panthers/Carolina",
+"Los Angeles Chargers/Chargers/San Diego Chargers;Arizona Cardinals/Arizona;Tennessee Titans/Tennessee/Houston Oilers",
+"Jacksonville Jaguars/Jags/Jacksonville;Houston Texans/Houston","" ]},
+{q:"Name a Stanley Cup champion from 2000 to 2025",team:1,t:[
+"Boston Bruins/Boston/B's;Pittsburgh Penguins/Pens/Pittsburgh",
+"Chicago Blackhawks/Hawks/Chicago;Tampa Bay Lightning/Bolts/Tampa Bay;Detroit Red Wings/Red Wings/Detroit",
+"Colorado Avalanche/Avs/Colorado;Los Angeles Kings/LA Kings/Kings;Florida Panthers/Florida;Washington Capitals/Caps/Washington",
+"Vegas Golden Knights/Golden Knights/Vegas;St. Louis Blues/Blues/St Louis;New Jersey Devils/New Jersey",
+"Anaheim Ducks/Anaheim;Carolina Hurricanes/Canes/Carolina",""]},
+{q:"Name a man who won a tennis Grand Slam singles title, 2000 to 2025",people:1,t:[
+"Roger Federer/Fed;Rafael Nadal/Rafa",
+"Novak Djokovic/Nole;Carlos Alcaraz;Jannik Sinner;Andy Murray",
+"Andy Roddick;Andre Agassi;Pete Sampras",
+"Stan Wawrinka/Stanislas Wawrinka;Juan Martin del Potro/Delpo/Del Potro;Lleyton Hewitt;Daniil Medvedev;Marat Safin",
+"Dominic Thiem;Marin Cilic;Juan Carlos Ferrero;Gustavo Kuerten/Guga",
+"Goran Ivanisevic;Albert Costa;Gaston Gaudio;Thomas Johansson"]},
+{q:"Name a school that has won the NCAA men's basketball title",t:[
+"Duke/Duke Blue Devils;North Carolina/UNC/Tar Heels",
+"Kentucky/UK/Wildcats;UConn/Connecticut/Huskies;Kansas/KU/Jayhawks;UCLA/Bruins",
+"Villanova/Nova;Michigan State/Spartans;Louisville/Cardinals;Indiana/Hoosiers;Florida/Gators;Syracuse/Orange",
+"Arizona;Virginia/UVA;Baylor;Maryland/Terps;Georgetown/Hoyas;NC State/North Carolina State;Michigan/Wolverines;Arkansas/Razorbacks",
+"UNLV/Runnin Rebels;Ohio State/Buckeyes;Cincinnati/Bearcats;Marquette;Wisconsin/Badgers;Loyola Chicago/Loyola;Texas Western/UTEP",
+"Holy Cross;CCNY/City College of New York;La Salle;San Francisco/USF;Oklahoma State/Oklahoma A&M;Stanford;Oregon;Utah;Wyoming"]},
+{q:"Name a country that has won the men's World Cup",t:[
+"Brazil","Germany/West Germany;Argentina","France;Italy","Spain;England","Uruguay",""]},
+{q:"Name a sport or discipline at the Summer Olympics",t:[
+"Swimming;Track and field/Athletics/Track/Running/Sprinting",
+"Gymnastics;Basketball;Soccer/Football",
+"Volleyball;Tennis;Boxing;Diving;Wrestling;Beach volleyball",
+"Cycling;Rowing;Weightlifting;Golf;Fencing;Judo;Archery;Water polo;Skateboarding;Surfing;Sailing",
+"Table tennis/Ping pong;Badminton;Handball;Equestrian/Horse riding;Triathlon;Taekwondo;Canoeing/Canoe/Kayak/Kayaking;Shooting;Field hockey/Hockey;Rugby/Rugby sevens;Sport climbing/Climbing;Breaking/Breakdancing;Baseball;Softball",
+"Modern pentathlon/Pentathlon;Artistic swimming/Synchronized swimming;Trampoline;Marathon swimming/Open water swimming;BMX;Mountain biking;Rhythmic gymnastics;Karate"]},
+{q:"Name a way a batter can reach base",t:[
+"Single/Hit/Base hit;Walk/Base on balls",
+"Double;Home run/Homer/Homerun;Hit by pitch/HBP/Hit by a pitch",
+"Triple;Error",
+"Fielder's choice/Fielders choice;Intentional walk",
+"Dropped third strike/Uncaught third strike",
+"Catcher's interference/Catchers interference/Interference"]},
+{q:"Name a Patriots player from the Brady era (2001 to 2019)",people:1,t:[
+"Tom Brady;Rob Gronkowski/Gronk",
+"Julian Edelman/Jules;Wes Welker;Randy Moss;Tedy Bruschi",
+"Vince Wilfork/Big Vince;Adam Vinatieri;Ty Law;Mike Vrabel;Troy Brown;Deion Branch;Malcolm Butler;Danny Amendola;Rodney Harrison;Willie McGinest;LeGarrette Blount;James White",
+"Richard Seymour;Kevin Faulk;Corey Dillon;Devin McCourty;Dont'a Hightower/Hightower;Stephen Gostkowski/Gost;Darrelle Revis;Logan Mankins;Lawyer Milloy;Matthew Slater;Rob Ninkovich/Ninko;Jerod Mayo;Asante Samuel;Stephon Gilmore;Antonio Brown;Jimmy Garoppolo/Jimmy G;Matt Cassel;Dion Lewis;Sony Michel;Chandler Jones;Brandin Cooks;Josh Gordon;Chris Hogan;Danny Woodhead;Patrick Chung",
+"Matt Light;Kyle Van Noy;Jason McCourty;BenJarvus Green-Ellis/Law Firm;Martellus Bennett;Brandon LaFell;Aqib Talib;Shane Vereen;Laurence Maroney;Ben Watson;David Givens;David Patten;Antowain Smith;Jacoby Brissett;Brian Hoyer;Trey Flowers;Duron Harmon;Nate Solder;Sebastian Vollmer;Marcus Cannon;Shaq Mason;Joe Thuney;David Andrews;Cordarrelle Patterson;Rex Burkhead;Phillip Dorsett;Mohamed Sanu;N'Keal Harry;J.C. Jackson/JC Jackson;Brandon Spikes;Ty Warren;Junior Seau;Adalius Thomas;Rosevelt Colvin",
+"Larry Izzo;Roman Phifer;Ted Johnson;Eugene Wilson;Bethel Johnson;Jarvis Green;Daniel Graham;Christian Fauria;Jabar Gaffney;Ken Walter;Josh Miller;Zoltan Mesko;Ryan Allen;Elandon Roberts;Lawrence Guy;Alan Branch;Akeem Ayers;Brandon Browner;Kenbrell Thompkins;Aaron Dobson;Lonie Paxton;Joe Andruzzi;Damien Woody;Stephen Neal;Dan Koppen;Mike Wright;Kyle Arrington;Sterling Moore"]},
+{q:"Name a Masters champion (through 2025)",people:1,t:[
+"Tiger Woods/Tiger",
+"Jack Nicklaus/Golden Bear;Phil Mickelson/Lefty;Arnold Palmer/Arnie;Scottie Scheffler;Rory McIlroy/Rory",
+"Jordan Spieth;Jon Rahm;Bubba Watson/Bubba;Dustin Johnson/DJ;Sergio Garcia/Sergio;Hideki Matsuyama;Gary Player",
+"Adam Scott;Patrick Reed;Nick Faldo;Seve Ballesteros/Seve;Fred Couples/Freddie Couples;Tom Watson;Vijay Singh;Ben Hogan;Sam Snead;Zach Johnson;Bernhard Langer",
+"Danny Willett;Charl Schwartzel;Angel Cabrera;Trevor Immelman;Mike Weir;Jose Maria Olazabal/Olazabal;Mark O'Meara;Ben Crenshaw;Ian Woosnam;Sandy Lyle;Larry Mize;Craig Stadler;Fuzzy Zoeller;Raymond Floyd/Ray Floyd;Byron Nelson;Gene Sarazen",
+"Horton Smith;Craig Wood;Jimmy Demaret;Cary Middlecoff;Doug Ford;Art Wall;Gay Brewer;Bob Goalby;George Archer;Charles Coody;Tommy Aaron;Billy Casper;Jack Burke Jr;Claude Harmon;Herman Keiser;Henry Picard;Ralph Guldahl"]},
+{q:"Name an MLB team",team:1,t:[
+"Boston Red Sox/Sox/Boston;New York Yankees/Yanks",
+"Chicago Cubs/Cubbies;Los Angeles Dodgers/LA Dodgers;New York Mets;San Francisco Giants/SF Giants;St. Louis Cardinals/Cards",
+"Atlanta Braves/Atlanta;Philadelphia Phillies/Philadelphia/Phils;Houston Astros/Houston/Stros;Chicago White Sox/ChiSox;Baltimore Orioles/Baltimore/O's;Detroit Tigers/Detroit",
+"Toronto Blue Jays/Jays/Toronto;Cleveland Guardians/Cleveland Indians/Cleveland;Texas Rangers/Texas;Seattle Mariners/Seattle/M's;Pittsburgh Pirates/Pittsburgh/Bucs;Cincinnati Reds/Cincinnati;Los Angeles Angels/Angels;Athletics/Oakland Athletics/Oakland A's/A's;San Diego Padres/San Diego/Pads",
+"Milwaukee Brewers/Milwaukee/Brew Crew;Minnesota Twins/Minnesota;Kansas City Royals/Kansas City/KC Royals;Colorado Rockies/Colorado;Arizona Diamondbacks/D-backs/Dbacks/Arizona;Tampa Bay Rays/Tampa Bay",
+"Washington Nationals/Nats/Washington;Miami Marlins/Florida Marlins/Miami"]},
+{q:"Name an NHL team",team:1,t:[
+"Boston Bruins/B's/Boston",
+"Toronto Maple Leafs/Leafs/Toronto;Montreal Canadiens/Habs/Montreal;New York Rangers;Chicago Blackhawks/Hawks/Chicago;Detroit Red Wings/Red Wings/Detroit;Pittsburgh Penguins/Pens/Pittsburgh",
+"Philadelphia Flyers/Philadelphia/Philly;Tampa Bay Lightning/Bolts/Tampa Bay;Edmonton Oilers/Edmonton;Vegas Golden Knights/Golden Knights/Vegas;Colorado Avalanche/Avs/Colorado;Florida Panthers/Florida;Washington Capitals/Caps/Washington;New York Islanders/Isles",
+"New Jersey Devils/New Jersey;Los Angeles Kings/LA Kings/Kings;St. Louis Blues/Blues/St Louis;Dallas Stars/Dallas;Carolina Hurricanes/Canes/Carolina;Buffalo Sabres/Buffalo;Ottawa Senators/Sens/Ottawa;Calgary Flames/Calgary;Vancouver Canucks/Vancouver",
+"Winnipeg Jets/Winnipeg;Minnesota Wild/Minnesota;Nashville Predators/Preds/Nashville;Anaheim Ducks/Anaheim;San Jose Sharks/San Jose",
+"Seattle Kraken/Seattle;Columbus Blue Jackets/Columbus/CBJ;Utah Mammoth/Utah Hockey Club/Utah"]},
+{q:"Name a position on a football team",t:[
+"Quarterback/QB",
+"Running back/RB/Halfback;Wide receiver/WR/Receiver",
+"Tight end/TE;Linebacker/LB;Kicker/Placekicker;Cornerback/CB/Corner",
+"Safety/Free safety/Strong safety;Offensive lineman/Lineman/O-line;Center;Defensive end/DE;Punter;Defensive tackle/DT;Defensive lineman/D-line",
+"Guard/Offensive guard;Tackle/Offensive tackle/Left tackle/Right tackle;Fullback/FB;Nose tackle/Nose guard;Edge rusher/Edge;Slot receiver/Slot;Nickelback/Nickel corner;Middle linebacker;Outside linebacker",
+"Long snapper;Holder;Kick returner/Punt returner/Returner;Gunner;H-back;Dime back"]},
+{q:"Name one of golf's four men's majors",t:[
+"Masters/The Masters","US Open/U.S. Open","British Open/The Open/Open Championship","PGA Championship/PGA","",""]},
+{q:"Name a piece of hockey equipment",t:[
+"Stick/Hockey stick;Skates/Ice skates;Puck",
+"Helmet;Gloves",
+"Pads/Goalie pads;Mask/Goalie mask;Jersey/Sweater;Mouthguard",
+"Shin guards/Shin pads;Shoulder pads;Elbow pads;Net/Goal",
+"Pants/Breezers/Hockey pants;Blocker;Catcher/Trapper/Glove hand;Visor/Face shield/Cage;Tape/Stick tape",
+"Neck guard/Throat guard;Cup/Jock/Jockstrap;Chest protector;Leg pads;Skate guards;Garter belt"]},
+{q:"Name a sports venue in Massachusetts, past or present",t:[
+"Fenway Park/Fenway;TD Garden/The Garden",
+"Gillette Stadium/Gillette",
+"Boston Garden/The old Garden;Harvard Stadium;Foxboro Stadium/Schaefer Stadium/Sullivan Stadium",
+"Agganis Arena;Conte Forum;Alumni Stadium;Polar Park;Suffolk Downs",
+"Matthews Arena/Boston Arena;Braves Field;Nickerson Field;Tsongas Center;DCU Center;MassMutual Center;Mullins Center;LeLacheur Park",
+"Huntington Avenue Grounds;South End Grounds;Walpole Street Grounds;Boston Madison Square Garden;Wonderland Greyhound Park/Wonderland"]},
+{q:"Name an NBA player with 30,000 career points",people:1,t:[
+"LeBron James/LeBron;Michael Jordan/MJ",
+"Kobe Bryant/Kobe;Kareem Abdul-Jabbar/Kareem",
+"Kevin Durant/KD",
+"Karl Malone/The Mailman;Dirk Nowitzki/Dirk",
+"Wilt Chamberlain/Wilt",""]},
+{q:"Name a Heisman Trophy winner (through 2024)",people:1,t:[
+"Tim Tebow;Doug Flutie/Flutie",
+"Barry Sanders;Bo Jackson;Cam Newton;Lamar Jackson;Joe Burrow;Johnny Manziel/Johnny Football",
+"Reggie Bush;Herschel Walker;Charles Woodson;Baker Mayfield;Kyler Murray;Derrick Henry;Roger Staubach;Desmond Howard;Ricky Williams;Robert Griffin III/RG3/RGIII;Jameis Winston;Marcus Mariota;Caleb Williams;Jayden Daniels;Travis Hunter",
+"Archie Griffin;Eddie George;Matt Leinart;Sam Bradford;Carson Palmer;Mark Ingram;Bryce Young;DeVonta Smith;Earl Campbell;Tony Dorsett;Marcus Allen;Charlie Ward;Vinny Testaverde;Tim Brown;Eric Crouch;Danny Wuerffel;Ron Dayne;Troy Smith",
+"Chris Weinke;Jason White;Ty Detmer;Gino Torretta;Rashaan Salaam;Andre Ware;Mike Rozier;George Rogers;Billy Sims;Paul Hornung;Steve Spurrier;Jim Plunkett;John Cappelletti;Johnny Rodgers;Ernie Davis",
+"Pat Sullivan;Gary Beban;Mike Garrett;John Huarte;Terry Baker;Joe Bellino;Pete Dawkins;Doc Blanchard;Glenn Davis;Davey O'Brien;Nile Kinnick;Tom Harmon;Frank Sinkwich;Angelo Bertelli;Johnny Lujack"]},
+{q:"Name a Boston sports team, pro or college, past or present",t:[
+"Red Sox/Boston Red Sox;Celtics/Boston Celtics;Bruins/Boston Bruins;Patriots/New England Patriots/Pats",
+"Revolution/New England Revolution/Revs;Boston College/BC/BC Eagles",
+"Harvard/Harvard Crimson;Boston University/BU/BU Terriers;Northeastern/Northeastern Huskies",
+"Boston Fleet/Fleet;Boston Braves/Braves;Boston Cannons/Cannons;Boston Legacy",
+"Boston Breakers/Breakers;Boston Pride/Pride;UMass Boston;Emerson;Suffolk;Boston Blazers;Boston Uprising",
+"Boston Yanks;Boston Redskins;Boston Americans;Boston Beaneaters/Beaneaters;Boston Shamrocks;Boston Minutemen;Boston Lobsters;Boston Whirlwinds"]},
+{q:"Name an MLB player with 500 career home runs",people:1,t:[
+"Babe Ruth/The Babe;Barry Bonds",
+"Hank Aaron;David Ortiz/Big Papi;Ken Griffey Jr/Griffey;Alex Rodriguez/A-Rod",
+"Willie Mays;Mickey Mantle;Albert Pujols;Ted Williams;Sammy Sosa;Mark McGwire;Manny Ramirez",
+"Reggie Jackson/Mr. October;Jim Thome;Frank Thomas/The Big Hurt;Mike Schmidt;Miguel Cabrera/Miggy;Frank Robinson",
+"Harmon Killebrew;Rafael Palmeiro;Jimmie Foxx;Willie McCovey;Ernie Banks;Eddie Murray;Gary Sheffield",
+"Eddie Mathews;Mel Ott"]},
+{q:"Name a track and field event",t:[
+"100 meters/100m/100 meter dash/100 m;Marathon",
+"Long jump;High jump;Hurdles;Relay/Relay race",
+"Pole vault;Shot put;Javelin;Mile;200 meters/200m;400 meters/400m;Discus",
+"Triple jump;Decathlon;Hammer throw/Hammer;800 meters/800m;4x100/4x100 relay;4x400/4x400 relay;110m hurdles/110 meter hurdles;100m hurdles",
+"Heptathlon;Steeplechase/3000m steeplechase;1500 meters/1500m;5000 meters/5000m/5K;10000 meters/10000m/10K;400m hurdles/400 meter hurdles",
+"Race walk/Racewalking/Race walking;Pentathlon;Mixed relay"]},
+{q:"Name a horse race",t:[
+"Kentucky Derby",
+"Preakness/Preakness Stakes;Belmont Stakes/Belmont",
+"Breeders' Cup/Breeders Cup",
+"Travers Stakes/Travers;Dubai World Cup;Melbourne Cup;Grand National;Pegasus World Cup",
+"Prix de l'Arc de Triomphe/Arc de Triomphe;Epsom Derby;Royal Ascot;Santa Anita Derby;Florida Derby;Haskell Invitational/Haskell",
+"Kentucky Oaks;Hambletonian;Whitney Stakes;Arkansas Derby;Blue Grass Stakes;Saudi Cup"]},
+{q:"Name a Triple Crown-winning racehorse",t:[
+"Secretariat","American Pharoah/American Pharaoh","Justify;Seattle Slew","Affirmed;Citation","War Admiral;Whirlaway;Count Fleet","Assault;Omaha;Gallant Fox;Sir Barton"]},
+{q:"Name a pitcher with 300 career wins",people:1,t:[
+"Cy Young;Nolan Ryan",
+"Roger Clemens;Greg Maddux;Randy Johnson/The Big Unit",
+"Tom Seaver;Tom Glavine;Steve Carlton/Lefty;Walter Johnson",
+"Warren Spahn;Phil Niekro;Gaylord Perry;Christy Mathewson;Lefty Grove",
+"Don Sutton;Early Wynn;Grover Cleveland Alexander/Pete Alexander;Eddie Plank",
+"Pud Galvin;Kid Nichols;Tim Keefe;John Clarkson;Charles Radbourn/Old Hoss Radbourn;Mickey Welch"]},
+{q:"Name a Winter Olympic sport or event",t:[
+"Hockey/Ice hockey;Skiing;Figure skating",
+"Snowboarding;Speed skating;Bobsled/Bobsleigh",
+"Luge;Curling;Downhill/Alpine skiing;Ski jumping",
+"Biathlon;Skeleton;Cross-country skiing;Short track/Short track speed skating;Slalom;Halfpipe;Ice dancing",
+"Giant slalom;Super-G;Moguls;Aerials;Freestyle skiing;Slopestyle;Big air;Ski cross;Snowboard cross",
+"Nordic combined;Ski mountaineering;Pairs skating;Team pursuit;Mass start;Parallel giant slalom;Monobob"]},
+{q:"Name a club in the 2025-26 Premier League",team:1,t:[
+"Manchester United/Man United/Man U;Liverpool",
+"Arsenal;Chelsea;Manchester City/Man City",
+"Tottenham/Tottenham Hotspur/Spurs;Newcastle/Newcastle United;Aston Villa/Villa",
+"West Ham/West Ham United;Everton;Leeds/Leeds United;Nottingham Forest/Forest",
+"Crystal Palace/Palace;Brighton/Brighton and Hove Albion;Fulham;Wolves/Wolverhampton/Wolverhampton Wanderers;Sunderland",
+"Bournemouth/AFC Bournemouth;Brentford;Burnley"]},
+{q:"Name a basketball violation or foul",t:[
+"Traveling/Travel/Walking;Double dribble",
+"Foul/Personal foul;Goaltending;Technical foul/Technical/Tech",
+"Three seconds/3 seconds/Three-second violation;Shot clock violation/Shot clock;Charge/Charging/Offensive foul;Flagrant foul/Flagrant",
+"Backcourt violation/Over and back/Backcourt;Carrying/Palming/Carry;Blocking foul/Block;Lane violation",
+"Eight-second violation/8 seconds;Five-second violation/5 seconds;Basket interference;Kicked ball;Illegal screen/Moving screen",
+"Defensive three seconds/Defensive 3 seconds/Illegal defense;Hanging on the rim;Delay of game;Clear path foul;Away-from-the-play foul"]},
+{q:"Name a football penalty",t:[
+"Holding;Offsides/Offside",
+"False start;Pass interference/PI;Roughing the passer",
+"Unsportsmanlike conduct;Face mask/Facemask;Delay of game;Unnecessary roughness",
+"Encroachment;Neutral zone infraction;Intentional grounding;Too many men on the field/Too many men;Taunting;Illegal formation",
+"Clipping;Illegal block in the back/Block in the back;Horse-collar tackle/Horse collar;Roughing the kicker;Running into the kicker;Illegal use of hands;Illegal contact;Illegal motion/Illegal shift",
+"Chop block;Ineligible man downfield/Ineligible receiver downfield;Illegal forward pass;Leverage;Leaping;Tripping;Spearing/Lowering the helmet;Illegal bat;Hip-drop tackle"]},
+{q:"Name a team Tom Brady faced in a Super Bowl",team:1,t:[
+"New York Giants/Giants","Philadelphia Eagles/Eagles;Kansas City Chiefs/Chiefs","Seattle Seahawks/Seahawks;Atlanta Falcons/Falcons","Los Angeles Rams/St. Louis Rams/Rams","Carolina Panthers/Panthers",""]},
+{q:"Name a team that has won the Super Bowl",team:1,t:[
+"New England Patriots/Pats/New England;Pittsburgh Steelers/Pittsburgh",
+"Dallas Cowboys/Dallas;San Francisco 49ers/Niners/San Francisco;Kansas City Chiefs/Kansas City/KC;Green Bay Packers/Green Bay",
+"New York Giants/Giants;Denver Broncos/Denver;Philadelphia Eagles/Philadelphia/Philly;Seattle Seahawks/Seattle",
+"Las Vegas Raiders/Raiders/Oakland Raiders;Baltimore Ravens/Baltimore;Tampa Bay Buccaneers/Bucs/Tampa Bay;Los Angeles Rams/Rams/St. Louis Rams;Washington Commanders/Washington",
+"Miami Dolphins/Miami/Fins;Indianapolis Colts/Colts/Baltimore Colts;New Orleans Saints/New Orleans;Chicago Bears/Chicago",
+"New York Jets/Jets"]},
+{q:"Name a famous sports trophy or award",t:[
+"Stanley Cup;Lombardi Trophy/Vince Lombardi Trophy",
+"Heisman Trophy/Heisman;Larry O'Brien Trophy/Larry O'Brien;Green Jacket;Cy Young Award/Cy Young",
+"Commissioner's Trophy;Claret Jug;World Cup Trophy/FIFA World Cup Trophy;Ryder Cup;Conn Smythe Trophy/Conn Smythe;Gold Glove",
+"Davis Cup;America's Cup;Hart Trophy;Silver Slugger;Grey Cup;Bill Russell Trophy;Norris Trophy;Vezina Trophy;Art Ross Trophy;Calder Trophy;Presidents' Trophy",
+"Wanamaker Trophy;Borg-Warner Trophy;Webb Ellis Cup;Pete Rozelle Trophy;Lady Byng Trophy;Hank Aaron Award;Roberto Clemente Award;Jim Thorpe Award;Biletnikoff Award;Maurice Podoloff Trophy;Venus Rosewater Dish",
+"Jules Rimet Trophy;Calcutta Cup;Solheim Cup;Walker Cup;Curtis Cup;Frank J. Selke Trophy/Selke;Ted Lindsay Award;Jack Adams Award;Davey O'Brien Award;Doak Walker Award"]},
+{q:"Name a swimming stroke",t:[
+"Freestyle/Front crawl/Crawl","Backstroke;Breaststroke","Butterfly/Fly","Doggy paddle/Dog paddle;Sidestroke;Individual medley/IM/Medley","Elementary backstroke","Trudgen"]},
+{q:"Name a famous boxer",people:1,t:[
+"Muhammad Ali/Cassius Clay;Mike Tyson/Iron Mike",
+"Floyd Mayweather/Mayweather;Manny Pacquiao/Pacman;Rocky Marciano;George Foreman;Joe Frazier",
+"Sugar Ray Leonard;Sugar Ray Robinson;Evander Holyfield;Canelo Alvarez/Canelo;Tyson Fury;Oscar De La Hoya;Marvin Hagler/Marvelous Marvin Hagler;Micky Ward;Jake Paul",
+"Joe Louis;Jack Dempsey;Lennox Lewis;Larry Holmes;Thomas Hearns/Hitman;Roberto Duran;Anthony Joshua;Deontay Wilder;Roy Jones Jr/Roy Jones;Arturo Gatti;Bernard Hopkins;Sonny Liston;Buster Douglas;Gervonta Davis/Tank Davis",
+"Julio Cesar Chavez;Terence Crawford/Bud Crawford;Oleksandr Usyk/Usyk;Gennady Golovkin/GGG/Triple G;Wladimir Klitschko;Vitali Klitschko;Jack Johnson;Ken Norton;Riddick Bowe;Shane Mosley;Ryan Garcia;Errol Spence Jr/Errol Spence;Naoya Inoue;Ricky Hatton;Floyd Patterson;Jake LaMotta",
+"Pernell Whitaker/Sweet Pea;Juan Manuel Marquez;Erik Morales;Marco Antonio Barrera;Naseem Hamed/Prince Naseem;James Toney;Joe Calzaghe;Max Schmeling;Henry Armstrong;Willie Pep;Carmen Basilio;Archie Moore;Aaron Pryor;Alexis Arguello"]},
+{q:"Name a women's tennis Grand Slam singles champion",people:1,t:[
+"Serena Williams/Serena;Venus Williams/Venus",
+"Steffi Graf;Coco Gauff/Coco;Naomi Osaka;Maria Sharapova;Chris Evert/Chrissie Evert;Martina Navratilova;Billie Jean King",
+"Iga Swiatek/Iga;Aryna Sabalenka/Sabalenka;Monica Seles;Kim Clijsters;Justine Henin;Martina Hingis;Ash Barty/Ashleigh Barty;Emma Raducanu",
+"Simona Halep;Angelique Kerber;Li Na;Caroline Wozniacki;Victoria Azarenka;Petra Kvitova;Jennifer Capriati;Lindsay Davenport;Madison Keys;Sloane Stephens;Elena Rybakina;Margaret Court;Arantxa Sanchez Vicario;Gabriela Sabatini",
+"Amelie Mauresmo;Svetlana Kuznetsova;Anastasia Myskina;Francesca Schiavone;Samantha Stosur;Marion Bartoli;Garbine Muguruza;Jelena Ostapenko;Bianca Andreescu;Sofia Kenin;Barbora Krejcikova;Marketa Vondrousova;Evonne Goolagong;Althea Gibson",
+"Iva Majoli;Mary Pierce;Conchita Martinez;Hana Mandlikova;Tracy Austin;Virginia Wade;Maureen Connolly;Margaret Osborne duPont;Darlene Hard"]},
+{q:"Name a NASCAR driver",people:1,t:[
+"Dale Earnhardt/The Intimidator;Dale Earnhardt Jr/Dale Jr;Jeff Gordon",
+"Jimmie Johnson;Richard Petty/The King;Danica Patrick;Kyle Busch;Tony Stewart;Chase Elliott",
+"Kevin Harvick;Denny Hamlin;Joey Logano;Kurt Busch;Kyle Larson;Ryan Blaney;Bubba Wallace;Darrell Waltrip",
+"Martin Truex Jr/Martin Truex;Brad Keselowski;Carl Edwards;Matt Kenseth;Bill Elliott;Rusty Wallace;Mark Martin;Cale Yarborough;David Pearson;William Byron;Christopher Bell",
+"Bobby Labonte;Terry Labonte;Bobby Allison;Davey Allison;Dale Jarrett;Ricky Rudd;Jeff Burton;Kasey Kahne;Clint Bowyer;Tyler Reddick;Ross Chastain;Alex Bowman;Austin Dillon;Ricky Stenhouse Jr",
+"Ned Jarrett;Ward Burton;Junior Johnson;Alan Kulwicki;Benny Parsons;Neil Bonnett;Shane van Gisbergen/SVG;Fireball Roberts;Lee Petty;Buddy Baker;Harry Gant"]},
+{q:"Name a player on the 2008 champion Celtics",people:1,t:[
+"Paul Pierce/The Truth;Kevin Garnett/KG",
+"Ray Allen;Rajon Rondo/Rondo",
+"Kendrick Perkins/Perk;James Posey",
+"Eddie House;Leon Powe;Glen Davis/Big Baby;Tony Allen",
+"Brian Scalabrine/Scal;Sam Cassell;P.J. Brown/PJ Brown",
+"Scot Pollard;Gabe Pruitt"]},
+{q:"Name a player on the 2024 champion Celtics",people:1,t:[
+"Jayson Tatum/JT;Jaylen Brown/JB",
+"Jrue Holiday/Jrue;Derrick White;Kristaps Porzingis/KP/Porzingis;Al Horford/Big Al",
+"Payton Pritchard",
+"Sam Hauser;Luke Kornet",
+"Xavier Tillman;Svi Mykhailiuk;Oshae Brissett;Neemias Queta",
+"Jaden Springer;Jordan Walsh;JD Davison;Drew Peterson"]},
+{q:"Name a sport played with a ball",t:[
+"Basketball;Football/American football;Soccer;Baseball",
+"Tennis;Golf;Volleyball",
+"Softball;Rugby;Bowling;Lacrosse;Kickball;Dodgeball;Pickleball;Cricket",
+"Table tennis/Ping pong;Water polo;Handball;Racquetball;Squash;Field hockey;Wiffle ball;Billiards/Pool",
+"Polo;Croquet;Bocce;Jai alai;Netball;Australian rules football/Aussie rules;Gaelic football;Four square;Skee-ball",
+"Sepak takraw;Hurling;Pelota;Korfball;Goalball;Bandy;Teqball;Roundnet/Spikeball"]}
+];
+
+const norm=s=>s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/&/g," and ").replace(/[^a-z0-9 ]/g,"").replace(/\b(the|jr)\b/g," ").replace(/\s+/g," ").trim();
+P.forEach(p=>{
+  p.map=new Map();p.list=[];
+  p.t.forEach((str,ti)=>str.split(";").map(x=>x.trim()).filter(Boolean).forEach(e=>{
+    const forms=e.split("/").map(x=>x.trim()),it={name:forms[0],tier:ti};p.list.push(it);
+    forms.forEach(f=>{const k=norm(f);if(k&&!p.map.has(k))p.map.set(k,it)});
+  }));
+  if(p.people||p.team){const cnt={};
+    p.list.forEach(it=>{const w=norm(it.name).split(" ").pop();if(w.length>2)cnt[w]=(cnt[w]||0)+1});
+    // shared last names (Manning, McCourty) credit the more common player
+    p.list.forEach(it=>{const w=norm(it.name).split(" ").pop();if(cnt[w]&&!p.map.has(w))p.map.set(w,it)});}
+});
+const lev=(a,b)=>{const m=a.length,n=b.length;let r=[...Array(n+1).keys()];for(let i=1;i<=m;i++){let prev=r[0];r[0]=i;for(let j=1;j<=n;j++){const t=r[j];r[j]=Math.min(r[j]+1,r[j-1]+1,prev+(a[i-1]===b[j-1]?0:1));prev=t}}return r[n]};
+function match(p,raw){const k=norm(raw);if(!k)return null;if(p.map.has(k))return p.map.get(k);
+  let best=null,bd=9;for(const [key,it] of p.map){if(key.length<5||Math.abs(key.length-k.length)>2)continue;const d=lev(k,key),lim=key.length>=9?2:1;if(d<=lim&&d<bd){bd=d;best=it}}return best}
+
+const today=new Date(),dkey=today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0");
+const dLabel=today.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+document.getElementById("date").textContent=dLabel;
+function rng(seed){let h=1779033703^seed.length;for(let i=0;i<seed.length;i++){h=Math.imul(h^seed.charCodeAt(i),3432918353);h=h<<13|h>>>19}return()=>{h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);return((h^=h>>>16)>>>0)/4294967296}}
+function pick7(r){const a=P.map((_,i)=>i);for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a.slice(0,7)}
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const app=document.getElementById("app"),courtEl=document.getElementById("court");
+const HOOP=[250,52];
+const SHARE_URL="https://claude.ai/artifact/CWbpAxg9J1dsPFcid2xivR";
+function spot(tier,i){const off=i-3;
+  if(tier===1)return[250+off*16,190];
+  if(tier===5)return[250+off*34,448];
+  const d=[30,0,150,262,335][tier],ang=[off*.45,0,(i%2?1:-1)*(.75+(i%3)*.18),off*.33,off*.12][tier];
+  return[HOOP[0]+d*Math.sin(ang),HOOP[1]+d*Math.cos(ang)];}
+function courtSVG(legs,upto){
+  const shots=(legs||[]).slice(0,upto).map((l,i)=>{const tr=legTier(l);if(tr<0)return"";const[x,y]=spot(tr,i);
+    return`<g><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="13" fill="#f26b1d" stroke="#fff" stroke-width="3"/><text x="${x.toFixed(1)}" y="${(y+4.5).toFixed(1)}" text-anchor="middle" font-family="Barlow,sans-serif" font-weight="700" font-size="13" fill="#fff">${i+1}</text></g>`}).join("");
+  const lbl=(t,x,y)=>`<text x="${x}" y="${y}" text-anchor="middle" font-family="'Barlow Condensed',sans-serif" font-weight="700" font-size="15" fill="rgba(255,255,255,.75)">${t}</text>`;
+  return`<svg viewBox="0 0 500 470" role="img" aria-label="Half court shot chart">
+  <defs><pattern id="pl" width="40" height="470" patternUnits="userSpaceOnUse"><rect width="40" height="470" fill="#dca468"/><rect x="38" width="2" height="470" fill="#c98f55"/><rect width="40" height="470" fill="url(#gr)" opacity=".35"/></pattern>
+  <linearGradient id="gr" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".25"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#8a5a2c" stop-opacity=".2"/></linearGradient>
+  <radialGradient id="lt" cx=".5" cy=".1" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#000" stop-opacity=".12"/></radialGradient></defs>
+  <rect width="500" height="470" fill="url(#pl)"/>
+  <path d="M0 0H500V470H0Z" fill="none" stroke="#fff" stroke-width="6"/>
+  <rect x="170" y="0" width="160" height="190" fill="#0b5d3b" stroke="#fff" stroke-width="3"/>
+  <circle cx="250" cy="190" r="60" fill="none" stroke="#fff" stroke-width="3"/>
+  <path d="M30 0V141.5A237.5 237.5 0 0 0 470 141.5V0" fill="none" stroke="#fff" stroke-width="3"/>
+  <path d="M190 470A60 60 0 0 1 310 470" fill="#0b5d3b" stroke="#fff" stroke-width="3"/>
+  <text x="250" y="463" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="30" fill="#fff" opacity=".9">LS</text>
+  <circle cx="250" cy="372" r="34" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="3" stroke-dasharray="6 6"/>
+  ${lbl("LOGO",250,377)}${lbl("FREE THROW",250,214)}${lbl("THREE",400,300)}${lbl("MID",110,120)}${lbl("HALF-COURT",400,445)}
+  <path d="M220 40H280" stroke="#fff" stroke-width="4"/>
+  <circle cx="250" cy="52" r="10" fill="none" stroke="#f26b1d" stroke-width="4"/>
+  <rect width="500" height="470" fill="url(#lt)"/>
+  ${shots}
+  <circle id="ball" r="0" cx="250" cy="52" fill="#f26b1d" stroke="#5a2a0a" stroke-width="2"/>
+</svg>`}
+function drawCourt(legs,upto,mini){courtEl.className="court"+(mini?" mini":"");courtEl.innerHTML=courtSVG(legs,upto)}
+function shoot(tier,i,made){
+  const b=document.getElementById("ball");if(!b)return;
+  const[sx,sy]=made?spot(tier,i):[250+(i-3)*30,330],[hx,hy]=made?HOOP:[250+(Math.random()>.5?60:-60),20];
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const t0=performance.now(),D=750;
+  const step=now=>{const t=Math.min(1,(now-t0)/D),e=t<.5?2*t*t:1-(-2*t+2)**2/2;
+    b.setAttribute("cx",sx+(hx-sx)*e);b.setAttribute("cy",sy+(hy-sy)*e);b.setAttribute("r",(9+10*Math.sin(Math.PI*t)).toFixed(1));
+    if(t<1)requestAnimationFrame(step);else b.setAttribute("r",made?"0":"9")};
+  requestAnimationFrame(step);}
+
+/* ---------- shared leaderboard + crowd rarity ---------- */
+let db=null,uid=null,canWrite=false,players=[],dbState="loading",writing=Promise.resolve();
+const me=()=>players.find(p=>p.id===uid);
+const cleanName=s=>String(s||"").replace(/\s+/g," ").trim().slice(0,20);
+function crowd(pi,name){ // other players' answers to this prompt
+  let n=0,c=0;for(const p of players){if(p.id===uid)continue;const a=p.ans&&p.ans[pi];if(!Array.isArray(a)||!a.length)continue;n++;if(a.includes(name))c++}
+  return{n,c};}
+function finalTier(pi,hit){
+  if(!hit)return{tier:-1,n:0,c:0};
+  const{n,c}=crowd(pi,hit.name);if(n<5)return{tier:hit.tier,n,c};
+  const s=c/n,ct=s>=.4?0:s>=.25?1:s>=.15?2:s>=.08?3:s>=.03?4:5;
+  return{tier:n>=20?ct:Math.round((hit.tier+ct)/2),n,c};}
+const legTier=l=>typeof l.tier==="number"?l.tier:(l.hit?l.hit.tier:-1);
+const legPts=l=>{const t=legTier(l);return t<0?0:TIERS[t].p};
+(async()=>{
+  const timer=setTimeout(()=>{if(dbState==="loading"){dbState="slow";refresh()}},10000);
+  try{
+    db=await claude.use("db");const user=await claude.use("user");
+    if(!db){clearTimeout(timer);dbState="off";refresh();return}
+    uid=user?await user.id():null;
+    const cw=user&&user.can?await user.can("data.write"):null;canWrite=!!uid&&cw!==false;
+    db.collection("players").onSnapshot(snap=>{
+      players=snap.docs.filter(d=>d.exists).map(d=>({id:d.id,...d.data()}));
+      if(!snap.metadata.fromCache){clearTimeout(timer)}dbState="on";refresh();
+    },()=>{clearTimeout(timer);dbState="off";refresh()});
+  }catch(e){clearTimeout(timer);dbState="off";refresh()}
+})();
+let view="home";
+function refresh(){if(view==="home")home();else if(view==="board")board();else if(view==="final")boardInto()}
+function saveGame(daily,legs,tot,name){
+  if(!db||!uid||!canWrite)return Promise.resolve(false);
+  const cur=me()||{},doc=JSON.parse(JSON.stringify(cur));delete doc.id;
+  doc.name=cleanName(name||doc.name)||"Player";doc.ans=doc.ans||{};doc.days=doc.days||{};
+  legs.forEach(l=>{if(!l.hit)return;const k=String(l.pi),a=doc.ans[k]||[];if(!a.includes(l.hit.name))a.push(l.hit.name);doc.ans[k]=a.slice(-60)});
+  if(daily&&!doc.days[dkey])doc.days[dkey]={total:tot,legs:legs.map(l=>({pi:l.pi,ans:String(l.ans).slice(0,40),name:l.hit?l.hit.name:"",tier:legTier(l)}))};
+  if(!daily){doc.best=Math.max(doc.best||0,tot);doc.practice=(doc.practice||0)+1}
+  doc.updated=Date.now();
+  writing=writing.then(()=>db.doc("players/"+uid).set(doc)).then(()=>true).catch(e=>{if(e&&e.code==="invalid_argument")canWrite=false;return false});
+  return writing;}
+function myDaily(){const m=me();if(m&&m.days&&m.days[dkey])return m.days[dkey];return store.get("ls-"+dkey)}
+
+let G=null,timerId=null;
+const total=()=>G.legs.reduce((s,l)=>s+legPts(l),0);
+const boardNote=()=>dbState==="on"?(canWrite?"":"You can see the leaderboard, but this link doesn't let you post scores. Ask Matt to invite you."):dbState==="off"?"Sign in to Claude to see the leaderboard.":dbState==="slow"?"The leaderboard can't be reached right now.":"Loading the leaderboard…";
+
+function home(){
+  view="home";clearInterval(timerId);drawCourt(null,0,false);
+  const done=myDaily(),best=Math.max(store.get("ls-best")||0,(me()&&me().best)||0);
+  app.className="out";
+  app.innerHTML=`<section class="card">
+    <div class="meta"><span>TODAY'S GAME</span><span>7 SHOTS</span></div>
+    <h2>Name the answer nobody else thinks of.</h2>
+    <p class="sub">Every prompt has lots of right answers. The obvious ones are layups. The deep cuts are half-court buzzer-beaters.</p>
+    ${done?`<p class="toast">You played today's game: <b>${esc(done.total)} pts</b>. Shoot around in practice until tomorrow.</p>`:""}
+    <div class="row">
+      ${done?`<button id="see" class="ghost">Today's shot chart</button>`:`<button id="daily">Tip off</button>`}
+      <button id="prac" class="ghost">Practice</button>
+      <button id="lb" class="ghost">Leaderboard</button>
+    </div>
+    ${best?`<p class="toast">Best practice game: ${esc(best)} pts</p>`:""}
+  </section>
+  <div class="tiers">${TIERS.map(t=>`<div class="tier"><b style="color:${t.c}">${t.k}</b><small>${t.p} pts · ${t.d}</small></div>`).join("")}</div>
+  <p class="how"><b>Scoring:</b> a right answer is graded by how rare it is, from Layup (10) to Half-court (100). Once five or more players have answered a prompt, rarity starts following what the group actually says. Wrong or blank is an airball. A perfect game is 700.</p>`;
+  const b=id=>document.getElementById(id);
+  if(b("daily"))b("daily").onclick=()=>start(true);
+  if(b("see"))b("see").onclick=()=>{G={daily:true,legs:done.legs.map(l=>({pi:l.pi,ans:l.ans,tier:legTier(l),hit:l.hit||(l.name?{name:l.name,tier:l.tier}:null)})),i:7,saved:true};final()};
+  b("prac").onclick=()=>start(false);b("lb").onclick=board;
+}
+function boardHTML(mode){
+  const rows=mode==="today"?players.filter(p=>p.days&&p.days[dkey]).map(p=>({p,v:+p.days[dkey].total||0,legs:p.days[dkey].legs||[]}))
+   :mode==="all"?players.map(p=>{const d=Object.values(p.days||{});return{p,v:d.reduce((s,x)=>s+(+x.total||0),0),g:d.length}}).filter(r=>r.g)
+   :players.filter(p=>p.best).map(p=>({p,v:+p.best||0}));
+  rows.sort((a,b)=>b.v-a.v);
+  if(!rows.length)return`<p class="sub" style="padding:14px 0">${mode==="today"?"No one has played today's game yet.":"No scores yet."}</p>`;
+  return`<ol class="lb">${rows.slice(0,50).map((r,i)=>`<li class="${r.p.id===uid?"mine":""}"><span class="rk">${i+1}</span><span class="nm">${esc(cleanName(r.p.name)||"Player")}${r.legs?`<small>${r.legs.map(l=>{const t=legTier(l);return t<0?"X":TIERS[t].s}).map(esc).join(" · ")}</small>`:r.g?`<small>${r.g} game${r.g>1?"s":""}</small>`:""}</span><span class="sc">${esc(r.v)}</span></li>`).join("")}</ol>`;}
+let lbMode="today";
+function lbTabs(){return`<div class="tabs" role="tablist">${[["today","Today"],["all","All-time"],["best","Practice best"]].map(([k,l])=>`<button role="tab" aria-selected="${lbMode===k}" data-m="${k}" class="${lbMode===k?"on":""}">${l}</button>`).join("")}</div>`}
+function bindTabs(fn){app.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{lbMode=b.dataset.m;fn()})}
+function board(){
+  view="board";clearInterval(timerId);drawCourt(null,0,true);app.className="out";
+  app.innerHTML=`<section class="card"><div class="meta"><span>LEADERBOARD · ${esc(dLabel)}</span><span>${players.length} PLAYER${players.length===1?"":"S"}</span></div>
+  <h2>Who's got range?</h2>${lbTabs()}<div>${dbState==="on"?boardHTML(lbMode):""}</div><p class="toast">${esc(boardNote())}</p></section>
+  <div class="row"><button id="hm" class="ghost">Back to start</button></div>`;
+  bindTabs(board);document.getElementById("hm").onclick=home;
+}
+function start(daily){
+  if(daily&&myDaily())return home();
+  const r=daily?rng("longshot-"+dkey):Math.random;
+  G={daily,legs:pick7(r).map(pi=>({pi,ans:"",hit:null,tier:-1})),i:0};view="play";ask();
+}
+function ask(){
+  const L=G.legs[G.i],p=P[L.pi];let left=25;
+  drawCourt(G.legs,G.i,true);app.className="";
+  app.innerHTML=`<section class="card">
+    <div class="meta"><span>SHOT ${G.i+1} OF 7 · ${total()} PTS</span><span class="clock" id="sec">:25</span></div>
+    <h2>${esc(p.q)}</h2>
+    <div class="timer" id="tb"><i id="bar"></i></div>
+    <form id="f" autocomplete="off"><input id="in" aria-label="Your answer" placeholder="Type your answer" autocapitalize="off" spellcheck="false" maxlength="60"><button>Shoot</button></form>
+  </section>`;
+  const inp=document.getElementById("in");inp.focus();
+  document.getElementById("f").onsubmit=e=>{e.preventDefault();lock(inp.value)};
+  clearInterval(timerId);
+  timerId=setInterval(()=>{left-=.25;const s=Math.max(0,Math.ceil(left));
+    document.getElementById("bar").style.width=Math.max(0,left/25*100)+"%";
+    const c=document.getElementById("sec");c.textContent=":"+String(s).padStart(2,"0");
+    if(left<=6){document.getElementById("tb").classList.add("low");c.classList.add("low")}
+    if(left<=0)lock(inp.value)},250);
+}
+function lock(v){
+  clearInterval(timerId);const L=G.legs[G.i],p=P[L.pi];L.ans=v.trim();L.hit=match(p,v);
+  const ft=finalTier(L.pi,L.hit);L.tier=ft.tier;
+  const h=L.hit,t=L.tier>=0?TIERS[L.tier]:null;
+  drawCourt(G.legs,G.i,true);shoot(L.tier,G.i,!!t);
+  setTimeout(()=>{if(G&&G.legs[G.i]===L)drawCourt(G.legs,G.i+1,true)},800);
+  const deep=p.list.filter(x=>x.tier>=4&&(!h||x.name!==h.name)).sort(()=>Math.random()-.5).slice(0,3).map(x=>x.name);
+  app.innerHTML=`<section class="card">
+    <div class="meta"><span>SHOT ${G.i+1} OF 7</span><span>${t?"BUCKET":"AIRBALL"}</span></div>
+    <h2>${esc(p.q)}</h2>
+    <p class="you">${L.ans?`You said: ${esc(L.ans)}${h&&norm(h.name)!==norm(L.ans)?` <span style="color:var(--cmute);font-weight:600">(${esc(h.name)})</span>`:""}`:"Shot clock violation."}</p>
+    <div class="res"><span class="stamp" style="color:${t?t.c:"#c8102e"}">${t?t.k.toUpperCase()+"!":"AIRBALL"}</span><span class="pts">+${t?t.p:0}</span></div>
+    ${h&&ft.n>=5?`<p class="deep">${ft.c} of ${ft.n} other players said this.</p>`:""}
+    ${deep.length?`<p class="deep">Half-court and logo answers: ${deep.map(esc).join(", ")}</p>`:""}
+    <div class="row"><button id="nx">${G.i<6?"Next shot":"Final buzzer"}</button></div>
+  </section>`;
+  const nx=document.getElementById("nx");nx.focus();
+  nx.onclick=()=>{G.i++;G.i<7?ask():final()};
+}
+function rank(n){return n<150?"Benchwarmer":n<300?"Sixth man":n<450?"Starter":n<600?"All-Star":"Hall of Famer"}
+function boardInto(){const el=document.getElementById("fb");if(!el)return;
+  el.innerHTML=`<div class="meta"><span>TODAY'S LEADERBOARD</span><span></span></div>${lbTabs()}<div>${dbState==="on"?boardHTML(lbMode):""}</div><p class="toast">${esc(boardNote())}</p>`;
+  bindTabs(boardInto);}
+function final(){
+  view="final";clearInterval(timerId);const tot=total();
+  drawCourt(G.legs,7,false);
+  if(G.daily&&!store.get("ls-"+dkey))store.set("ls-"+dkey,{total:tot,legs:G.legs.map(l=>({pi:l.pi,ans:l.ans,name:l.hit?l.hit.name:"",tier:legTier(l)}))});
+  if(!G.daily&&tot>(store.get("ls-best")||0))store.set("ls-best",tot);
+  const needName=!G.saved&&db&&canWrite&&!(me()&&me().name);
+  const savedName=store.get("ls-name")||"";
+  app.className="out";
+  app.innerHTML=`<section class="card">
+    <div class="meta"><span>${G.daily?"TODAY · "+esc(dLabel):"PRACTICE"}</span><span>FINAL</span></div>
+    <div class="big">${tot}</div><p class="sub"><b>${rank(tot)}</b> · out of 700</p>
+    <form id="nf" class="${needName?"":"hide"}" autocomplete="off"><input id="nm" maxlength="20" aria-label="Your name for the leaderboard" placeholder="Your name for the leaderboard" value="${esc(savedName)}"><button>Post score</button></form>
+    <p class="toast" id="sv"></p>
+    <ul class="slip" style="margin-top:6px">${G.legs.map((l,i)=>{const tr=legTier(l),t=tr>=0?TIERS[tr]:null;return`<li><span class="n${t?"":" x"}">${i+1}</span><span class="q">${esc(P[l.pi].q)}</span><span class="o" style="color:${t?t.c:"#c8102e"}">${t?t.k:"Airball"}<small>+${t?t.p:0}</small></span><span class="a">${l.ans?esc(l.ans):"No answer"}</span></li>`}).join("")}</ul>
+    <p class="deep">Share key: 🏀 layup · 🎯 free throw · 💪 mid-range · 👌 three · 🔥 logo · 🚀 half-court · 🧱 airball</p>
+    <div class="row"><button id="cp">Copy result for the chat</button><button id="again" class="ghost">Practice</button></div>
+    <p class="toast" id="msg" style="white-space:pre-line"></p>
+  </section>
+  <section class="card" id="fb" style="margin-top:14px"></section>
+  <div class="row"><button id="hm" class="ghost">Back to start</button></div>`;
+  boardInto();
+  const sv=document.getElementById("sv");
+  const post=name=>{G.saved=true;sv.textContent="Posting…";
+    saveGame(G.daily,G.legs,tot,name).then(ok=>{sv.textContent=ok?"Score posted.":boardNote()||"Couldn't post this score."})};
+  if(!G.saved&&db&&canWrite&&!needName)post();
+  else if(!G.saved&&dbState!=="on")sv.textContent=boardNote();
+  document.getElementById("nf").onsubmit=e=>{e.preventDefault();const n=cleanName(document.getElementById("nm").value);if(!n){sv.textContent="Add a name first.";return}
+    store.set("ls-name",n);document.getElementById("nf").classList.add("hide");post(n)};
+  document.getElementById("again").onclick=()=>start(false);
+  document.getElementById("hm").onclick=home;
+  document.getElementById("cp").onclick=()=>{
+    const EMO=["🏀","🎯","💪","👌","🔥","🚀"],gameNo=Math.floor((new Date(dkey+"T12:00:00")-new Date("2026-11-24T12:00:00"))/864e5)+1;
+    const txt=`Long Shot ${G.daily?"#"+gameNo:"practice"} 🏀 ${tot}\n\n`+G.legs.map(l=>{const t=legTier(l);return t<0?"🧱":EMO[t]}).join("")+`\n\n${SHARE_URL}`;
+    const m=document.getElementById("msg");
+    (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>m.textContent="Copied. Paste it in the group chat:\n\n"+txt).catch(()=>m.textContent=txt);
+  };
+}
+home();
+}
+</script>
+</body>
+</html>
